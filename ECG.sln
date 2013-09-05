@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ECG", "ECG\ECG.vcproj", "{BB6F6AE4-8795-4722-B16D-1BB7632FE744}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Pocket PC 2003 (ARMV4) = Debug|Pocket PC 2003 (ARMV4)
+		Debug|WinFast-310 VA (ARMV4I) = Debug|WinFast-310 VA (ARMV4I)
+		Release|Pocket PC 2003 (ARMV4) = Release|Pocket PC 2003 (ARMV4)
+		Release|WinFast-310 VA (ARMV4I) = Release|WinFast-310 VA (ARMV4I)
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|Pocket PC 2003 (ARMV4).Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|Pocket PC 2003 (ARMV4).Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|WinFast-310 VA (ARMV4I).ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|WinFast-310 VA (ARMV4I).Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Debug|WinFast-310 VA (ARMV4I).Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|Pocket PC 2003 (ARMV4).Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|Pocket PC 2003 (ARMV4).Deploy.0 = Release|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|WinFast-310 VA (ARMV4I).ActiveCfg = Release|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|WinFast-310 VA (ARMV4I).Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{BB6F6AE4-8795-4722-B16D-1BB7632FE744}.Release|WinFast-310 VA (ARMV4I).Deploy.0 = Release|Pocket PC 2003 (ARMV4)
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
