@@ -115,13 +115,20 @@ private:
 	BOOL SendStartCommand();
 	BOOL SendEndCommand();
 
-	void UpdateStatus(CString, BOOL);
 
 	CTime t1, t2;
 	
 	BOOL CreateCodeWord(double **&, INT, INT);
 	void DeleteCodeWord(double **&, INT );
 public:
+
+	/* Note! Originally UpdateStatus is declared as private member function of class CECGDlg
+	   Howeever, for debugging purpose, I make it as a public member function.
+	   Written by Michael Lu 2013/09/09
+	*/
+	void UpdateStatus(CString, BOOL);
+
+
 	static void GetECGRawData(char *&, double *&, DWORD, DWORD &, BYTE &);
 	static bool pack(int &tx_data, int &idx, int &bits_cnt);
 

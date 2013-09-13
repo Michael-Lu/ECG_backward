@@ -1,16 +1,22 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+/*
 #define Debug_PrintShapeCodebook
 #define Debug_PrintGainCodebook
 #define Debug_PrintVQIndex
 #define Debug_PrintGainValue
+*/
+
 #define Debug_PrintPeriodNormalizedData
+
+/*
 #define Debug_PrintSend2PhoneData
 #define Debug_PrintSend2NetworkData
 #define Debug_PrintPeriodLength
 #define Debug_PrintRIndex
 #define Debug_PrintECGRawData
+*/
 
 const CString PortTbl[6] = {_T("COM4:"), _T("COM5:"), _T("COM6:"), _T("COM7:"), _T("COM8:"), _T("COM9:")};
 const DWORD BaudTbl[1] = {CBR_19200};

@@ -43,7 +43,8 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 	//open an file to record original ECG data
 #ifdef Debug_PrintPeriodNormalizedData
-	FILE *m_EcgFp = fopen("linear_ECG_bth_source_is_period_normalized.txt","w");
+	FILE *m_EcgFp_int = fopen("int_linear_ECG_bth_source_is_period_normalized.txt","w");
+	FILE *m_EcgFp_double = fopen("double_linear_ECG_bth_source_is_period_normalized.txt","w");
 #endif
 #ifdef Debug_PrintGainValue
 	FILE *fp_Gain = fopen("gain.txt", "w");
@@ -54,15 +55,20 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 #ifdef Debug_PrintDSCBits
 	FILE *fp_dsc = fopen("dsc.txt", "w");
 #endif
+
+/*
 	static bool firstGainCalculated = true;
 	static int PackIndex = 0;
 	static int PackGainIndex = 0;
+*/
 
 	/***********************************************************************
 	The format of data received from bluetooth tells us that every two bytes
 	data compose a ECG sample. So a sample is two bytes long.
 	So we use UINT16 instead of UINT to save memory space.
 	***********************************************************************/
+/*
+
 	double *PackedNumber = new double [vqcb.samplePoint];
 	if(PackedNumber == NULL)
 	{
@@ -77,10 +83,14 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
     INT bits_cnt = 0;
     INT tx_data = 0;
 
+
+
 	VQClass vq(vqcb.dimension, vqcb.M, vqcb.samplePoint, pDlg->m_strY);
+*/	
+	
 	//vq.showBitTable(vqcb.dimension);
 	//vq.showY();
-
+/*
 	char *indexData = new char [BufSize*4/vqcb.samplePoint];
 	if(indexData == NULL)
 	{
@@ -89,8 +99,15 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	}
 
 	int DataAlignment = SIZEofCHAR;
-
+*/
 	double *buf = new double [BufSize*4];
+
+	int *sendbuf = new int[BufSize*4];
+	int sendlen = 0;
+
+	bool flag = true;
+	char dbgstr[30];
+
 	if(buf == NULL)
 	{
 		pDlg->UpdateStatus(L"In VQAlgThread: new buf error!", ADDSTR2STATUS);
@@ -108,7 +125,9 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	else
 		memset(periodLen, 0, sizeof(int) * cPeriodNum);
 
+/*
 	gainPredictor generateGain(default_alpha);
+
 	double gain = 0.0;
 
 	int j;
@@ -117,12 +136,14 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	int YCnt = 0;
 	int YdataLen = vq.getVectorPerCycle();
     bool YSent = false;
-
+*/
 	while(TRUE)
 	{
 		if(WaitForSingleObject(pDlg->m_ExitVQThreadEvent, 0) == WAIT_OBJECT_0)
 			break;
+
 		EnterCriticalSection(&m_csBTHDataBuf);
+
 		if(SharedMem_BTHDataBufLen == 0)
 		{
 			LeaveCriticalSection(&m_csBTHDataBuf);
@@ -131,15 +152,58 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		buflen = SharedMem_BTHDataBufLen;
 		memcpy(buf, SharedMem_BTHDataBuf, sizeof(double) * SharedMem_BTHDataBufLen);
 		SharedMem_BTHDataBufLen = 0;
+
 		periodCnt = SharedMem_PeriodCnt;
 		memcpy(periodLen, SharedMem_PeriodLen, sizeof(int) * periodCnt);
+
 		LeaveCriticalSection(&m_csBTHDataBuf);
 
 		
+		
+
+		
+		for(short i=0 ;i<buflen; i++)
+			sendbuf[i]=buf[i];
+
+		memmove(sendbuf+1, sendbuf, buflen*sizeof(int));
+		sendbuf[0] = periodCnt;
+
+
+#ifdef Debug_PrintPeriodNormalizedData
+		if(flag){
+			for(short  j = 0 ; j < buflen ; j++ ){
+				fprintf(m_EcgFp_double,"%04lf\n", buf[j]);
+				fprintf(m_EcgFp_int,"%d\n", sendbuf[j]);
+			}
+			fprintf(m_EcgFp_int,"%d\n", sendbuf[buflen]);
+			flag = false;
+		}
+#endif
+
+
+		//Important! java socket on PC only accept big-endian data, which is the same endianess of the network's
+		for(short i=0 ;i<buflen+1; i++)
+			sendbuf[i]=::htonl(sendbuf[i]);
+
+
+		//note that the following line can only be executed after wifi is connected
+		sendlen = (buflen+1)*sizeof(int);
+		sprintf(dbgstr,"Send %d bytes!", sendlen);
+
+
+
+		if( ::send(pDlg->s, (char*)sendbuf, sendlen , 0) != sendlen ){
+			pDlg->UpdateStatus(L"Send Data Failed!", ADDSTR2STATUS);
+		}else{
+			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
+		}
+
+    /*
 		CompressedDataIndexCnt = 0;
 		CompressedGainIndexCnt = 0;
 		//implement VQ Algorithm here!
 
+	
 
 		for(DWORD i = 0 ; i < buflen ; i++ )
 		{
@@ -159,13 +223,21 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 #endif
 				for( j = 0 ; j < vqcb.samplePoint ; j++ )
 					PackedNumber[j] /= gain;
+
+
 				vq.LookUpCodeBook(PackedNumber, CompressedDataIndex);
-				/*WCHAR strErr[128];
-				wsprintf(strErr, L"%lf\n", gain);
-				pDlg->UpdateStatus(strErr, ADDSTR2STATUS);*/
+
+				//The following three lines are originally commented by WeiYing Tsai
+
+				//WCHAR strErr[128];
+				//wsprintf(strErr, L"%lf\n", gain);
+				//pDlg->UpdateStatus(strErr, ADDSTR2STATUS);
+
 				indexData[CompressedDataIndexCnt++] = char(CompressedDataIndex);
 			}
 		}
+
+
 #ifdef Debug_PrintVQIndex
 		for( int i = 0 ; i < CompressedDataIndexCnt ; i++)
 		{
@@ -211,11 +283,23 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 			}
 		}
 		LeaveCriticalSection(&m_csCompressedDataBuf);
+
+	*/
+
+
 	}
+	
+
+
+	delete [] sendbuf;
+
 	delete [] buf;
-	delete [] PackedNumber;
-	delete [] indexData;
+//	delete [] PackedNumber;
+//	delete [] indexData;
 	delete [] periodLen;
+
+
+
 #ifdef Debug_PrintGainValue
 	fclose(fp_Gain);
 #endif
@@ -226,7 +310,8 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	fclose(fp_dsc);
 #endif
 #ifdef Debug_PrintPeriodNormalizedData
-	fclose(m_EcgFp);
+	fclose(m_EcgFp_int);
+	fclose(m_EcgFp_double);
 #endif
 	
 	return 0;

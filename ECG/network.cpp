@@ -135,6 +135,8 @@ void CECGDlg::OnBnClickedWIFIConnect()
 	//InitializeCriticalSection(&m_csGainBuf);
 
 	m_ExitWIFIThreadEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	
+	/*
     hWIFIThread = CreateThread(0, 0, WIFIThread, this, 0, &IDThread);
     if(hWIFIThread == NULL)
     {
@@ -142,6 +144,8 @@ void CECGDlg::OnBnClickedWIFIConnect()
         return;
     }
     CloseHandle(hWIFIThread);
+	*/
+
 
 	m_BtnWIFIConnect.EnableWindow(FALSE);
 	m_BtnWIFIDisconnect.EnableWindow(TRUE);
