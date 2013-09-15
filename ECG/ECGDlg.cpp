@@ -17,11 +17,11 @@
 #define new DEBUG_NEW
 #endif
 
-double CECGDlg::SharedMem_BTHDataBuf[BufSize*4];  //This received ECG data has been period-normalized!!
+double CECGDlg::SharedMem_BTHDataBuf[cBTH_Shared_Mem_Size_PeriodCnt*cNormalizedLen];  //This received ECG data has been period-normalized!!
 DWORD CECGDlg::SharedMem_BTHDataBufLen = 0;
 char CECGDlg::SharedMem_CompressedDataBuf[BufSize];
 DWORD CECGDlg::SharedMem_CompressedDataBufLen = 0;
-int CECGDlg::SharedMem_PeriodLen[cPeriodNum];
+int CECGDlg::SharedMem_PeriodLen[cBTH_Shared_Mem_Size_PeriodCnt];
 DWORD CECGDlg::SharedMem_PeriodCnt;
 //double CECGDlg::SharedMem_Gain;
 //bool CECGDlg::SharedMem_GainReady = false;

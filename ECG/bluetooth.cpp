@@ -346,6 +346,8 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 	double slope = 0.0;
 	double defaultMaxSlope = 0.0;
 
+	CString dbgstr;
+
 	while(TRUE)
 	{
 		if(WaitForSingleObject(pDlg->m_ExitBTHThreadEvent, 0) == WAIT_OBJECT_0)
@@ -404,6 +406,7 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 						int skipLen;
 						if( onSetButNoR == false )
 							QRSDetectionBeginIndex = ECGRawDataSize;
+
 						GetECGRawData(recvBuf, ECGRawData, dwLength, ECGRawDataSize, CurrentState);
 						myQRSDetect.detectAlg(ECGRawData, QRSDetectionBeginIndex, ECGRawDataSize, RIndex, RIndexCnt, lastQRSOnsetIndex, prevQRSOnsetIndex, onSetButNoR);
 						if( RIndexCnt > 0)
@@ -417,6 +420,7 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 							}
 							else
 								skipLen = RIndex[0];
+
 							ECGRawDataSize = ECGRawDataSize - skipLen;
 							memmove(ECGRawData, ECGRawData + skipLen, sizeof(double)*ECGRawDataSize);
 							
@@ -424,6 +428,7 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 							{
 								for( int i = 0 ; i < (RIndexCnt-1) ; i++ )
 									RIndex[i] = RIndex[i+1] - skipLen;
+
 								RIndexCnt--;
 							}
 							else
@@ -449,8 +454,12 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 						}
 						if( onSetButNoR == false )
 							QRSDetectionBeginIndex = ECGRawDataSize;
+
+
 						GetECGRawData(recvBuf, ECGRawData, dwLength, ECGRawDataSize, CurrentState);
 						myQRSDetect.detectAlg(ECGRawData, QRSDetectionBeginIndex, ECGRawDataSize, RIndex, RIndexCnt, lastQRSOnsetIndex, prevQRSOnsetIndex, onSetButNoR);
+
+
 						if( RIndexCnt > 1)
 						{
 							periodCnt = RIndexCnt - 1;
@@ -469,11 +478,22 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 							periodEq.periodNormalize(ECGRawData, normalizedData, periodLen, periodCnt, cNormalizedLen, normalizedDataTotalLen);
 
 							EnterCriticalSection(&m_csBTHDataBuf);
-							SharedMem_BTHDataBufLen = normalizedDataTotalLen;
-							memcpy(SharedMem_BTHDataBuf, normalizedData, sizeof(double) * normalizedDataTotalLen);
+
+							if( (SharedMem_BTHDataBufLen + normalizedDataTotalLen)*sizeof(double) > sizeof(SharedMem_BTHDataBuf) ){
+								dbgstr.Format(_T("BTH_SharedMem Overflow!...buflen:%d...newdatalen:%d"), SharedMem_BTHDataBufLen,normalizedDataTotalLen);
+								pDlg->UpdateStatus(dbgstr, ADDSTR2STATUS);
+								break;
+							}else{
+								
+								dbgstr.Format( _T("buflen:%d newdatalen:%d"), SharedMem_BTHDataBufLen, normalizedDataTotalLen );
+								pDlg->UpdateStatus(dbgstr, ADDSTR2STATUS);
+
+								memcpy(SharedMem_BTHDataBuf+SharedMem_BTHDataBufLen, normalizedData, sizeof(double) * normalizedDataTotalLen);
+								SharedMem_BTHDataBufLen += normalizedDataTotalLen;
 							
-							SharedMem_PeriodCnt = periodCnt;
-							memcpy(SharedMem_PeriodLen, periodLen, sizeof(int) * periodCnt);
+								memcpy(SharedMem_PeriodLen+SharedMem_PeriodCnt, periodLen, sizeof(int) * periodCnt);
+								SharedMem_PeriodCnt += periodCnt;
+							}
 							
 							LeaveCriticalSection(&m_csBTHDataBuf);
 						}

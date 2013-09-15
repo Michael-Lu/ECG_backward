@@ -100,9 +100,9 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 	int DataAlignment = SIZEofCHAR;
 */
-	double *buf = new double [BufSize*4];
+	double *buf = new double [cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 
-	int *sendbuf = new int[BufSize*4];
+	int *sendbuf = new int[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 	int sendlen = 0;
 
 	bool flag = true;
@@ -144,17 +144,22 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 		EnterCriticalSection(&m_csBTHDataBuf);
 
-		if(SharedMem_BTHDataBufLen == 0)
+		if(SharedMem_PeriodCnt < cBTHSharedMem_Read_LeastPeriodCnt)
 		{
 			LeaveCriticalSection(&m_csBTHDataBuf);
 			continue;
 		}
-		buflen = SharedMem_BTHDataBufLen;
-		memcpy(buf, SharedMem_BTHDataBuf, sizeof(double) * SharedMem_BTHDataBufLen);
-		SharedMem_BTHDataBufLen = 0;
+		buflen = cBTHSharedMem_Read_LeastPeriodCnt * cNormalizedLen;//SharedMem_BTHDataBufLen;
+		memcpy(buf, SharedMem_BTHDataBuf, sizeof(double) * buflen);
 
-		periodCnt = SharedMem_PeriodCnt;
+		memmove(SharedMem_BTHDataBuf, SharedMem_BTHDataBuf+buflen, sizeof(double));
+		SharedMem_BTHDataBufLen -= buflen;
+
+		periodCnt = cBTHSharedMem_Read_LeastPeriodCnt;
 		memcpy(periodLen, SharedMem_PeriodLen, sizeof(int) * periodCnt);
+
+		memmove(SharedMem_PeriodLen, SharedMem_PeriodLen+periodCnt, sizeof(double));
+		SharedMem_PeriodCnt -= periodCnt;
 
 		LeaveCriticalSection(&m_csBTHDataBuf);
 
@@ -180,6 +185,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		}
 #endif
 
+		continue; //debugging obstacle
 
 		//Important! java socket on PC only accept big-endian data, which is the same endianess of the network's
 		for(short i=0 ;i<buflen+1; i++)

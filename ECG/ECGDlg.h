@@ -93,11 +93,11 @@ private:
 
 	/****************************shared memory***************************/
 	//static變數不可以在constructor做初始化
-	static double SharedMem_BTHDataBuf[BufSize*4];
+	static double SharedMem_BTHDataBuf[cBTH_Shared_Mem_Size_PeriodCnt*cNormalizedLen];  //originally is BufSize*4
 	static DWORD SharedMem_BTHDataBufLen;
 	static char SharedMem_CompressedDataBuf[BufSize];
 	static DWORD SharedMem_CompressedDataBufLen;
-	static int SharedMem_PeriodLen[cPeriodNum];
+	static int SharedMem_PeriodLen[cBTH_Shared_Mem_Size_PeriodCnt];  //originally is cPeriodNum
 	static DWORD SharedMem_PeriodCnt;
 	//static double SharedMem_Gain;
 	//static bool SharedMem_GainReady;

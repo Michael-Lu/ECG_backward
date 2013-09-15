@@ -136,7 +136,7 @@ void CECGDlg::OnBnClickedWIFIConnect()
 
 	m_ExitWIFIThreadEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	
-	/*
+	/* Commented by Michael
     hWIFIThread = CreateThread(0, 0, WIFIThread, this, 0, &IDThread);
     if(hWIFIThread == NULL)
     {
