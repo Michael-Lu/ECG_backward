@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "jp2Encoder.h"
 #include "ECG.h"
 #include "ECGDlg.h"
 #include <stdio.h>
@@ -100,6 +101,9 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 	int DataAlignment = SIZEofCHAR;
 */
+	jp2Encoder ECGEncoder(10,288);
+
+
 	double *buf = new double [cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 
 	int *sendbuf = new int[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
@@ -184,6 +188,9 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 			flag = false;
 		}
 #endif
+
+		ECGEncoder.writeCompon(sendbuf+1, 10, 288);
+		ECGEncoder.Encode();
 
 		continue; //debugging obstacle
 
