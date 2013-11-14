@@ -101,7 +101,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 	int DataAlignment = SIZEofCHAR;
 */
-	jp2Encoder ECGEncoder(10,288);
+	jp2Encoder ECGEncoder(cBTHSharedMem_Read_LeastPeriodCnt,288);
 
 
 	double *buf = new double [cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
@@ -189,7 +189,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		}
 #endif
 
-		ECGEncoder.writeCompon(sendbuf+1, 10, 288);
+		ECGEncoder.writeCompon(sendbuf+1, cBTHSharedMem_Read_LeastPeriodCnt, 288);
 		ECGEncoder.Encode();
 
 		continue; //debugging obstacle

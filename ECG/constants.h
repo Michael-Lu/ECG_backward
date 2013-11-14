@@ -34,7 +34,7 @@ const int vectorPerCycle = cNormalizedLen / 4;
 const int cNormalizedCnt = cPeriodNum-1;   /*only four group of normalized data. 4 is come from 5(cPeriodNum) minus 1.*/
 
 const int cBTH_Shared_Mem_Size_PeriodCnt = 15;
-const int cBTHSharedMem_Read_LeastPeriodCnt = 10; //retrieve 10 Periods data from SharedMem_BTHDataBuf per reading action
+const int cBTHSharedMem_Read_LeastPeriodCnt = 5; //retrieve 10 Periods data from SharedMem_BTHDataBuf per reading action
 const int cnumofSelectedIndex = 5; //for multi-choice
 const double default_alpha = 0.45;
     
