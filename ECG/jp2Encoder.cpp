@@ -60,6 +60,7 @@ jp2Encoder::~jp2Encoder(){
 int jp2Encoder::Encode(){
 
 
+	jas_stream_rewind(pStream);  //hasn't been validate yet
 
 	if(jas_image_encode(pImage, pStream, jas_image_strtofmt("jp2"), NULL) )
 		throw "jas_image_encode error...";
