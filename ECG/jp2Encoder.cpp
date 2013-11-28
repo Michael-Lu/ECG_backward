@@ -79,7 +79,7 @@ int jp2Encoder::Encode(){
 
 
 
-int jp2Encoder::getjp2Size(){
+unsigned long jp2Encoder::getjp2Size(){
 	return jp2Size;
 }
 

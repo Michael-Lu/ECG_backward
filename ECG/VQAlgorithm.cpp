@@ -106,7 +106,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 	int *buf = new int[cBTHSharedMem_Read_LeastPeriodCnt+cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 
-	int *sendbuf = new int[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
+	u_long *sendbuf = new u_long[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 	int sendlen = 0;
 
 	bool flag = true;
@@ -210,13 +210,25 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		//--- send the period length out ---
 
 		sendlen = cBTHSharedMem_Read_LeastPeriodCnt*sizeof(unsigned long);
-		sprintf(dbgstr,"Send %d bytes!", sendlen);
+		sprintf(dbgstr,"Send Period length %d bytes!", sendlen);
 
 		if( ::send(pDlg->s, (char*)sendbuf, sendlen , 0) != sendlen ){
 			pDlg->UpdateStatus(L"Send Data Failed!", ADDSTR2STATUS);
 		}else{
 			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
 		}
+
+		//--- send the length of jp2Image ---
+		sendlen = sizeof(u_long);
+		unsigned long jp2Size = ECGEncoder.getjp2Size();
+		sprintf(dbgstr,"Send Image length %d!", jp2Size);
+
+		if( ::send(pDlg->s, (char*)&jp2Size, sendlen, 0) != sendlen ){
+			pDlg->UpdateStatus(L"Send Data Failed!", ADDSTR2STATUS);
+		}else{
+			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
+		}
+
 
 		//--- send the encoded data out ---
 		sendlen = ECGEncoder.getjp2Size();
@@ -227,6 +239,8 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		}else{
 			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
 		}
+
+		break; //for debug
 
 
 	}
