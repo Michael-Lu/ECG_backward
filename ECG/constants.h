@@ -8,7 +8,7 @@
 #define Debug_PrintGainValue
 */
 
-//#define Debug_PrintPeriodNormalizedData
+#define Debug_PrintPeriodNormalizedData
 
 /*
 #define Debug_PrintSend2PhoneData
@@ -16,11 +16,11 @@
 */
 
 //#define Debug_PrintPeriodLength
-//#define Debug_DumpEncodedECG /*dump encoded ECG JP2 Image*/
-/*
-#define Debug_PrintRIndex
-#define Debug_PrintECGRawData
-*/
+#define Debug_DumpEncodedECG /*dump encoded ECG JP2 Image*/
+
+//#define Debug_PrintRIndex  //Useless now, need to be recovered. The actual retrieving R index codes disappeared!
+//#define Debug_PrintECGRawData
+
 
 const CString PortTbl[6] = {_T("COM4:"), _T("COM5:"), _T("COM6:"), _T("COM7:"), _T("COM8:"), _T("COM9:")};
 const DWORD BaudTbl[1] = {CBR_19200};

@@ -155,7 +155,7 @@
 				AdditionalLibraryDirectories="&quot;D:\JasperForWinCE\LibCE\MinLibCE\Pocket PC 2003 (ARMV4)\Debug&quot;;&quot;D:\JasperForWinCE\JasperLib\Pocket PC 2003 (ARMV4)\Debug&quot;"
 				GenerateDebugInformation="true"
 				StackReserveSize="0"
-				StackCommitSize="4096"
+				StackCommitSize="0"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				EntryPointSymbol="WinMainCRTStartup"

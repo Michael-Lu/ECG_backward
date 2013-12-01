@@ -271,10 +271,10 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 {
 	CECGDlg * pDlg = (CECGDlg *) lparam;
 #ifdef Debug_PrintRIndex
-	fp_RIndex = fopen("bthR.txt", "w");
+	fp_RIndex = fopen("bthR.txt", "w+");
 #endif
 #ifdef Debug_PrintECGRawData
-	bth_ECG = fopen("ECG_bth.txt", "w");
+	bth_ECG = fopen("Michael_ECG_bth.txt", "w+");
 #endif
 #ifdef Debug_PrintPeriodLength
 	fp_periodLength = fopen("bthA.txt", "w");

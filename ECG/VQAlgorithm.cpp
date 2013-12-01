@@ -42,11 +42,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	CECGDlg * pDlg = (CECGDlg *) lparam;
 	pDlg->UpdateData(TRUE);
 
-	//open an file to record original ECG data
-#ifdef Debug_PrintPeriodNormalizedData
-	FILE *m_EcgFp_int = fopen("int_linear_ECG_bth_source_is_period_normalized.txt","w");
-	FILE *m_EcgFp_len = fopen("period_length.txt","w");
-#endif
+
 #ifdef Debug_PrintGainValue
 	FILE *fp_Gain = fopen("gain.txt", "w");
 #endif
@@ -104,7 +100,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 	jp2Encoder ECGEncoder(cBTHSharedMem_Read_LeastPeriodCnt,cNormalizedLen);
 
 
-	int *buf = new int[cBTHSharedMem_Read_LeastPeriodCnt+cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
+	int *buf = new int[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 
 	u_long *sendbuf = new u_long[cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen];
 	int sendlen = 0;
@@ -117,9 +113,10 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		pDlg->UpdateStatus(L"In VQAlgThread: new buf error!", ADDSTR2STATUS);
         return 1;
 	}
-	DWORD buflen;
+	DWORD buflen = cBTHSharedMem_Read_LeastPeriodCnt * cNormalizedLen;
 
 	int periodCnt = 0;
+
 	unsigned long *periodLen = new unsigned long [cBTHSharedMem_Read_LeastPeriodCnt];
 	if(periodLen == NULL)
 	{
@@ -130,10 +127,10 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		memset(periodLen, 0, sizeof(int) * cPeriodNum);
 
 
-#ifdef Debug_DumpEncodedECG
+#if defined (Debug_DumpEncodedECG) || defined(Debug_PrintPeriodNormalizedData)
 
 	short count = 0;
-
+	
 #endif
 	while(TRUE)
 	{
@@ -148,7 +145,8 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 			LeaveCriticalSection(&m_csBTHDataBuf);
 			continue;
 		}
-		buflen = cBTHSharedMem_Read_LeastPeriodCnt * cNormalizedLen;//SharedMem_BTHDataBufLen;
+		//buflen = cBTHSharedMem_Read_LeastPeriodCnt * cNormalizedLen;//SharedMem_BTHDataBufLen;
+		
 		for(short i=0;i<buflen;i++)
 			buf[i] = SharedMem_BTHDataBuf[i];
 
@@ -165,11 +163,21 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 
 		LeaveCriticalSection(&m_csBTHDataBuf);
 
-		
-		
 
+#if defined (Debug_DumpEncodedECG) || defined(Debug_PrintPeriodNormalizedData)
+		char filename[100]; //Note that this block should be only put after 'continue'
+		count++;
+		count %= 10;
+#endif
 
 #ifdef Debug_PrintPeriodNormalizedData
+
+		sprintf(filename,"Normalized_ECG%d.txt",count);
+		FILE *m_EcgFp_int = fopen(filename,"w+");
+
+		sprintf(filename,"WinCE_period_length%d.txt",count);
+		FILE *m_EcgFp_len = fopen(filename,"w+");
+
 		for(short  j = 0 ; j < buflen ; j++ ){
 			fprintf(m_EcgFp_int,"%d ", buf[j]);
 		}
@@ -180,8 +188,9 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		}
 		fprintf(m_EcgFp_len,"\n");
 
+		fclose(m_EcgFp_int);
+		fclose(m_EcgFp_len);
 		
-	    //flag = false;
 #endif
 
 
@@ -193,10 +202,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 			sendbuf[i] = htonl(periodLen[i]);
 
 #ifdef Debug_DumpEncodedECG
-		char filename[20];
 		sprintf(filename,"Ecg%d.jp2",count);
-		count++;
-		count %= 10;
 
 		FILE* pJp2File = fopen(filename,"wb+");
 		fwrite(ECGEncoder.getjp2Data(), sizeof(unsigned char), ECGEncoder.getjp2Size(), pJp2File);
@@ -264,10 +270,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 #ifdef Debug_PrintDSCBits
 	fclose(fp_dsc);
 #endif
-#ifdef Debug_PrintPeriodNormalizedData
-	fclose(m_EcgFp_int);
-	fclose(m_EcgFp_len);
-#endif
+
 	
 	return 0;
 }
@@ -516,8 +519,8 @@ BOOL CECGDlg::SendStartCommand()
 	WriteFile(m_hComm, "W+\r", 3, &dwactlen, NULL);
 	Sleep(100);
 	t1 = CTime::GetCurrentTime();
-	Sleep(100);
-	WriteFile(m_hComm, "S+\r", 3, &dwactlen, NULL);
+	//Sleep(100);
+	//WriteFile(m_hComm, "S+\r", 3, &dwactlen, NULL);
 
 	return TRUE;
 }
@@ -533,8 +536,8 @@ BOOL CECGDlg::SendEndCommand()
 	DWORD dwactlen;
 
 	//Important to delay 100 miniseconds.
-	Sleep(100);
-	WriteFile(m_hComm, "S-\r", 3, &dwactlen, NULL);
+	//Sleep(100);
+	//WriteFile(m_hComm, "S-\r", 3, &dwactlen, NULL);
 	Sleep(100);
 	WriteFile(m_hComm, "W-\r", 3, &dwactlen, NULL);
 	Sleep(100);
