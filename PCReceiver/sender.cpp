@@ -4,6 +4,7 @@
 #include <Ws2tcpip.h>
 #include <stdio.h>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -66,60 +67,59 @@ int __cdecl main() {
         return 1;
     }
 
-    // Send an initial buffer
-    iResult = send( ConnectSocket, (char*)sendbuf, 10*sizeof(u_long), 0 );
-    if (iResult == SOCKET_ERROR) {
-        printf("send failed: %d\n", WSAGetLastError());
-        closesocket(ConnectSocket);
-        WSACleanup();
-        return 1;
+    while(1){
+
+        iResult = send( ConnectSocket, (char*)sendbuf, 10*sizeof(u_long), 0 );
+        if (iResult == SOCKET_ERROR) {
+            printf("send failed: %d\n", WSAGetLastError());
+            closesocket(ConnectSocket);
+            WSACleanup();
+            return 1;
+        }
+
+        printf("Send period lengths done: %ld bytes\n", iResult);
+
+    	// Send the lenght of jp2Image
+    	ifstream data(".\\Sunset.jpg", ios::binary);
+
+    	//calculate the length of jp2Image
+    	data.seekg(0, data.end);
+    	sendbuf[0] = data.tellg();
+    	data.seekg(0, data.beg);
+
+        iResult = send( ConnectSocket, (char*)sendbuf, sizeof(u_long), 0 );
+        if (iResult == SOCKET_ERROR) {
+            printf("send failed: %d\n", WSAGetLastError());
+            closesocket(ConnectSocket);
+            WSACleanup();
+            return 1;
+        }
+
+    	char tmpdata[1000];
+    	int send_bytes = 0;
+
+    	while(!data.eof() && data.good() && send_bytes < sendbuf[0]){
+    		data.read(tmpdata,1000);
+    		iResult = send( ConnectSocket, tmpdata, data.gcount(), 0 );
+    		if (iResult == SOCKET_ERROR) {
+    			printf("send failed: %d\n", WSAGetLastError());
+    			closesocket(ConnectSocket);
+    			WSACleanup();
+    			return 1;
+    		}else{
+    			send_bytes += iResult;
+    		}
+    	
+    	}
+    	printf("send %d bytes done\n", send_bytes);
+
+
+    char flag;
+    cin.get(flag);
+    if( flag == 'n' || flag == 'N')
+        break;
+
     }
-
-    printf("Send period lengths done: %ld bytes\n", iResult);
-
-	// Send the lenght of jp2Image
-	ifstream data(".\\Sunset.jpg", ios::binary);
-
-	//calculate the length of jp2Image
-	data.seekg(0, data.end);
-	sendbuf[0] = data.tellg();
-	data.seekg(0, data.beg);
-
-    iResult = send( ConnectSocket, (char*)sendbuf, sizeof(u_long), 0 );
-    if (iResult == SOCKET_ERROR) {
-        printf("send failed: %d\n", WSAGetLastError());
-        closesocket(ConnectSocket);
-        WSACleanup();
-        return 1;
-    }
-
-	char tmpdata[1000];
-	int send_bytes = 0;
-
-	while(!data.eof() && data.good() && send_bytes < sendbuf[0]){
-		data.read(tmpdata,1000);
-		iResult = send( ConnectSocket, tmpdata, data.gcount(), 0 );
-		if (iResult == SOCKET_ERROR) {
-			printf("send failed: %d\n", WSAGetLastError());
-			closesocket(ConnectSocket);
-			WSACleanup();
-			return 1;
-		}else{
-			send_bytes += iResult;
-		}
-	
-	}
-	printf("send %d bytes done\n", send_bytes);
-
-    // shutdown the connection since no more data will be sent
-    iResult = shutdown(ConnectSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        printf("shutdown failed: %d\n", WSAGetLastError());
-        closesocket(ConnectSocket);
-        WSACleanup();
-        return 1;
-    }
-
 
     closesocket(ConnectSocket);
     WSACleanup();

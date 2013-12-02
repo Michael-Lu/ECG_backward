@@ -76,46 +76,6 @@ int __cdecl main(int argc, char* argv[])
         return 1;
     }
 
-/*
-//debug start
-
-    struct addrinfo *res;
-    int error;
- 
-    // resolve the domain name into a list of addresses
-    error = getaddrinfo("www.example.com", NULL, NULL, &result);
-    if (error != 0)
-    {
-		fprintf(stderr, "%d\n", error); 
-        fprintf(stderr, "error in getaddrinfo: %s\n", gai_strerror(error));
-
-        exit(EXIT_FAILURE);
-    }   
- 
-    // loop over all returned results and do inverse lookup
-    for (res = result; res != NULL; res = res->ai_next)
-    {   
-        char hostname[NI_MAXHOST] = "";
- 
-        error = getnameinfo(res->ai_addr, res->ai_addrlen, hostname, NI_MAXHOST, NULL, 0, 0); 
-        if (error != 0)
-        {
-			fprintf(stderr, "%d\n", WSAGetLastError());
-            fprintf(stderr, "error in getnameinfo: %s\n", gai_strerror(error));
-            continue;
-        }
-        if (*hostname != '\0')
-            printf("hostname: %s\n", hostname);
-    }   
- 
-    freeaddrinfo(result);
-
-	getchar();
-
-
-
-	return 0;
-*/
 
 
 
@@ -190,92 +150,96 @@ int __cdecl main(int argc, char* argv[])
 	//Create File
 	ofstream ECG_data( ".\\ECG.jp2", ios::out | ios::binary);
 	ofstream period_length(".\\period_length.txt", ios::out);
-
-	printf("receiving period lengths...\n");
-
-	int recv_bytes = 0; //count the number of received bytes when receiving period length
-
-	ZeroMemory(recvbuf, recvbuflen);
-	while(recv_bytes < PERIOD_NUM * sizeof(PERIOD_TYPE)){
-
-		iResult = recv(ClientSocket, recvbuf+recv_bytes, (PERIOD_NUM * sizeof(PERIOD_TYPE) - recv_bytes), 0);
-		if (iResult > 0) {
-			recv_bytes += iResult;
-			printf("bytes received: %d\n", recv_bytes);
-		}
-		else if (iResult == 0){
-			printf("Connection closing...\n");
-			break;
-		}else{
-			printf("recv failed with error: %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			WSACleanup();
-			period_length.close();
-			ECG_data.close();
-
-			return 1;
-		}
-	}
-
-	PERIOD_TYPE* pRecvPeriod = (PERIOD_TYPE*)recvbuf;
-	for(short i=0; i<PERIOD_NUM ; i++)
-		period_length<<ntohl(pRecvPeriod[i])<<endl; //write the received periods to the file
-
-    // Receive the length of jp2 image length
-	printf("receiving jp2 image length...\n");
-
-    ZeroMemory(recvbuf, recvbuflen);
-	recv_bytes = 0;
-	while(recv_bytes < sizeof(PERIOD_TYPE) ){
-
-		iResult = recv(ClientSocket, recvbuf+recv_bytes, (sizeof(PERIOD_TYPE)-recv_bytes), 0);
-		if (iResult > 0) {
-			recv_bytes += iResult;
-			printf("bytes received: %d\n", recv_bytes);
-		}
-		else if (iResult == 0){
-			printf("Connection closing...\n");
-			break;
-		}else{
-			printf("recv failed with error: %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			WSACleanup();
-			period_length.close();
-			ECG_data.close();
-
-			return 1;
-		}
-	}
-
-	PERIOD_TYPE jp2ImageLen = ((PERIOD_TYPE*)recvbuf)[0];
-	printf("Image length is %d\n", jp2ImageLen);
-
-	printf("receiving jp2 image...\n");
 	
-	recv_bytes = 0;
-    while(recv_bytes < jp2ImageLen) {
+	while(1){
+		printf("receiving period lengths...\n");
 
-        ZeroMemory(recvbuf, recvbuflen);
-        iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-        if (iResult > 0) {
-            //printf("Bytes received: %d\n", iResult);
-			ECG_data.write(recvbuf,iResult);
-			recv_bytes += iResult;
-        }
-		else if (iResult == 0){
-            printf("Connection closing...\n");
-			break;
-		}else{
-            printf("recv failed with error: %d\n", WSAGetLastError());
-            closesocket(ClientSocket);
-            WSACleanup();
-            ECG_data.close();
+		int recv_bytes = 0; //count the number of received bytes when receiving period length
 
-            return 1;
-        }
-    }
-	printf("received image data %d bytes\n", recv_bytes);
+		ZeroMemory(recvbuf, recvbuflen);
+		while(recv_bytes < PERIOD_NUM * sizeof(PERIOD_TYPE)){
 
+			iResult = recv(ClientSocket, recvbuf+recv_bytes, (PERIOD_NUM * sizeof(PERIOD_TYPE) - recv_bytes), 0);
+			if (iResult > 0) {
+				recv_bytes += iResult;
+				printf("bytes received: %d\n", recv_bytes);
+			}
+			else if (iResult == 0){
+				printf("Connection closing...\n");
+				goto DONE;
+			}else{
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+				period_length.close();
+				ECG_data.close();
+
+				return 1;
+			}
+		}
+
+		PERIOD_TYPE* pRecvPeriod = (PERIOD_TYPE*)recvbuf;
+		for(short i=0; i<PERIOD_NUM ; i++)
+			period_length<<ntohl(pRecvPeriod[i])<<endl; //write the received periods to the file
+
+		// Receive the length of jp2 image length
+		printf("receiving jp2 image length...\n");
+
+		ZeroMemory(recvbuf, recvbuflen);
+		recv_bytes = 0;
+		while(recv_bytes < sizeof(PERIOD_TYPE) ){
+
+			iResult = recv(ClientSocket, recvbuf+recv_bytes, (sizeof(PERIOD_TYPE)-recv_bytes), 0);
+			if (iResult > 0) {
+				recv_bytes += iResult;
+				printf("bytes received: %d\n", recv_bytes);
+			}
+			else if (iResult == 0){
+				printf("Connection closing...\n");
+				goto DONE;
+			}else{
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+				period_length.close();
+				ECG_data.close();
+
+				return 1;
+			}
+		}
+
+		PERIOD_TYPE jp2ImageLen = ((PERIOD_TYPE*)recvbuf)[0];
+		printf("Image length is %d\n", jp2ImageLen);
+
+		printf("receiving jp2 image...\n");
+		
+		recv_bytes = 0;
+		while(recv_bytes < jp2ImageLen) {
+
+			ZeroMemory(recvbuf, recvbuflen);
+			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			if (iResult > 0) {
+				//printf("Bytes received: %d\n", iResult);
+				ECG_data.write(recvbuf,iResult);
+				recv_bytes += iResult;
+			}
+			else if (iResult == 0){
+				printf("Connection closing...\n");
+				goto DONE;
+			}else{
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+				ECG_data.close();
+
+				return 1;
+			}
+		}
+		printf("received image data %d bytes\n", recv_bytes);
+
+	}
+
+/*
     // shutdown the connection since we're done
     iResult = shutdown(ClientSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
@@ -286,8 +250,8 @@ int __cdecl main(int argc, char* argv[])
 
         return 1;
     }
-
-    // cleanup
+*/
+DONE:    // cleanup
     closesocket(ClientSocket);
     WSACleanup();
     ECG_data.close();

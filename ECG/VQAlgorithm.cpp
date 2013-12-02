@@ -127,7 +127,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		memset(periodLen, 0, sizeof(int) * cPeriodNum);
 
 
-#if defined (Debug_DumpEncodedECG) || defined(Debug_PrintPeriodNormalizedData)
+#ifdef Debug
 
 	short count = 0;
 	
@@ -164,11 +164,13 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		LeaveCriticalSection(&m_csBTHDataBuf);
 
 
-#if defined (Debug_DumpEncodedECG) || defined(Debug_PrintPeriodNormalizedData)
+#ifdef Debug
 		char filename[100]; //Note that this block should be only put after 'continue'
 		count++;
 		count %= 10;
 #endif
+
+
 
 #ifdef Debug_PrintPeriodNormalizedData
 
@@ -191,6 +193,32 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 		fclose(m_EcgFp_int);
 		fclose(m_EcgFp_len);
 		
+#endif
+
+		//Normalize data to the range of 0 to 255
+
+#ifdef Debug_DumpScaledECG
+		sprintf(filename,"Scaled_Ecg%d.txt",count);
+		FILE *pScaledECGFile = fopen(filename,"w+");
+#endif
+
+		float max = buf[0]; //find the max in the image
+		for(short i=1;i<cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen;i++)
+		{
+			max = buf[i]>max ? buf[i] : max;
+		}
+
+		
+		for(short j=0;j<cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen;j++)
+		{
+			buf[j] = (float)buf[j]/max*255; // scale to the 0~255
+#ifdef Debug_DumpScaledECG
+			fprintf(pScaledECGFile,"%d ",buf[j]);
+#endif
+		}
+
+#ifdef Debug_DumpScaledECG
+		fclose(pScaledECGFile);
 #endif
 
 

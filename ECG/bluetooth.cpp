@@ -485,8 +485,8 @@ DWORD CECGDlg::BTHRecvThread(LPVOID lparam)
 								break;
 							}else{
 								
-								dbgstr.Format( _T("buflen:%d newdatalen:%d"), SharedMem_BTHDataBufLen, normalizedDataTotalLen );
-								pDlg->UpdateStatus(dbgstr, ADDSTR2STATUS);
+								//dbgstr.Format( _T("buflen:%d newdatalen:%d"), SharedMem_BTHDataBufLen, normalizedDataTotalLen );
+								//pDlg->UpdateStatus(dbgstr, ADDSTR2STATUS);
 
 								memcpy(SharedMem_BTHDataBuf+SharedMem_BTHDataBufLen, normalizedData, sizeof(double) * normalizedDataTotalLen);
 								SharedMem_BTHDataBufLen += normalizedDataTotalLen;
