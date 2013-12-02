@@ -44,7 +44,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     char port[10]="4567";
 
     if(nlhs != 1){
-        mexPrintf("\n\tThere should only be 1 input argument\n");
+        mexPrintf("\n\tThere should only be 1 output argument\n");
     }
 
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
