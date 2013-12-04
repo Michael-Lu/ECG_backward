@@ -45,6 +45,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     if(nlhs != 1){
         mexPrintf("\n\tThere should only be 1 output argument\n");
+<<<<<<< Updated upstream
+=======
+        return;
+>>>>>>> Stashed changes
     }
 
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -120,7 +124,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     }
 
     // No longer need server socket
-    //closesocket(ListenSocket);
+    closesocket(ListenSocket);
 
     plhs[0] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
     int* pmxData = (int*) mxGetData(plhs[0]);
