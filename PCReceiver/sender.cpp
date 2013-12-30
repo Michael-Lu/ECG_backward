@@ -28,10 +28,6 @@ int __cdecl main() {
     char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 
-	for(short i=0; i<10 ;i++)
-		sendbuf[i] = htonl(20+i);
-
-
 
     //----------------------
     // Initialize Winsock
@@ -68,6 +64,8 @@ int __cdecl main() {
     }
 
     while(1){
+        for(short i=0; i<10 ;i++)
+            sendbuf[i] = htonl(20+i);
 
         iResult = send( ConnectSocket, (char*)sendbuf, 10*sizeof(u_long), 0 );
         if (iResult == SOCKET_ERROR) {
@@ -116,6 +114,7 @@ int __cdecl main() {
 
     char flag;
     cin.get(flag);
+    cin.ignore();
     if( flag == 'n' || flag == 'N')
         break;
 

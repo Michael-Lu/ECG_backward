@@ -203,15 +203,24 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 #endif
 
 		float max = buf[0]; //find the max in the image
+		float min = buf[0];
 		for(short i=1;i<cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen;i++)
 		{
 			max = buf[i]>max ? buf[i] : max;
+			min = buf[i]<min ? buf[i] : min;
 		}
 
-		
+		if(!(max > min)){
+			sprintf(dbgstr,"Failed at VQAlgorithm: Max isn't > min!");
+			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
+		}
+
+
+
+
 		for(short j=0;j<cBTHSharedMem_Read_LeastPeriodCnt*cNormalizedLen;j++)
 		{
-			buf[j] = (float)buf[j]/max*255; // scale to the 0~255
+			buf[j] = ((float)buf[j]-min)/(max-min)*255; // scale to the 0~255
 #ifdef Debug_DumpScaledECG
 			fprintf(pScaledECGFile,"%d ",buf[j]);
 #endif
@@ -274,7 +283,7 @@ DWORD CECGDlg::VQAlgThread(LPVOID lparam)
 			pDlg->UpdateStatus(CString(dbgstr), ADDSTR2STATUS);
 		}
 
-		break; //for debug
+		
 
 
 	}
@@ -547,8 +556,8 @@ BOOL CECGDlg::SendStartCommand()
 	WriteFile(m_hComm, "W+\r", 3, &dwactlen, NULL);
 	Sleep(100);
 	t1 = CTime::GetCurrentTime();
-	//Sleep(100);
-	//WriteFile(m_hComm, "S+\r", 3, &dwactlen, NULL);
+	Sleep(100);
+	WriteFile(m_hComm, "S+\r", 3, &dwactlen, NULL);
 
 	return TRUE;
 }
@@ -564,8 +573,8 @@ BOOL CECGDlg::SendEndCommand()
 	DWORD dwactlen;
 
 	//Important to delay 100 miniseconds.
-	//Sleep(100);
-	//WriteFile(m_hComm, "S-\r", 3, &dwactlen, NULL);
+	Sleep(100);
+	WriteFile(m_hComm, "S-\r", 3, &dwactlen, NULL);
 	Sleep(100);
 	WriteFile(m_hComm, "W-\r", 3, &dwactlen, NULL);
 	Sleep(100);
