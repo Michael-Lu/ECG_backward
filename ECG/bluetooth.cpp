@@ -13,6 +13,7 @@
 #include "QRSDetection.h"
 #include "periodEqualization.h"
 
+//Added to test git
 using namespace std;
 
 CInitSock BTHSock;
