@@ -45,10 +45,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     if(nlhs != 1){
         mexPrintf("\n\tThere should only be 1 output argument\n");
-<<<<<<< Updated upstream
-=======
         return;
->>>>>>> Stashed changes
     }
 
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
