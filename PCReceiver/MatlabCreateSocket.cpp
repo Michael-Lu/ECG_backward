@@ -19,8 +19,11 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #pragma comment (lib, "Ws2_32.lib")
+
+static SOCKET listen_on_socket(char* addr, char* port = "4567");
 
 /* The gateway function */
 void mexFunction( int nlhs, mxArray *plhs[],
@@ -29,6 +32,31 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 
     WSADATA wsaData;
+
+    if(nlhs != 2){
+        mexPrintf("There should be exactly 3 output argument, [raw_data, period, err]\n");
+        return;
+    }
+
+    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return;
+    }
+
+
+    plhs[0] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
+    int* pmxData = (int*) mxGetData(plhs[0]);
+    *pmxData = ClientSocket;
+    printf("Accepted Connection on Socket %d", ClientSocket);
+
+    return;
+}
+
+
+static SOCKET listen_on_socket(char* addr, char* port = "4567"){
+// Remember to call WSAStartup before calling this function.
+// And, remember to WSAcleanup after calling this function.
     int iResult;
 
     SOCKET ListenSocket = INVALID_SOCKET;
@@ -41,18 +69,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int cli_sockaddr_len = sizeof(cli_sockaddr_in);
     char* ipstr=NULL;
 
-    char port[10]="4567";
-
-    if(nlhs != 1){
-        mexPrintf("\n\tThere should only be 1 output argument\n");
-        return;
-    }
-
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
-        return;
-    }
 
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -64,9 +80,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     iResult = getaddrinfo(NULL, port, &hints, &result);
     if ( iResult != 0 ) {
         printf("getaddrinfo failed with error: %d\n", iResult);
-        WSACleanup();
-
-        return;
+		errno = iResult;
+        return INVALID_SOCKET;
     }
 
     // Create a SOCKET for connecting to server
@@ -74,9 +89,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
     if (ListenSocket == INVALID_SOCKET) {
         printf("socket failed with error: %ld\n", WSAGetLastError());
         freeaddrinfo(result);
-        WSACleanup();
-
-        return;
+		errno = WSAGetLastError();
+		
+        return INVALID_SOCKET;
     }
 
 
@@ -86,9 +101,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
         printf("bind failed with error: %d\n", WSAGetLastError());
         freeaddrinfo(result);
         closesocket(ListenSocket);
-        WSACleanup();
+        errno = WSAGetLastError();
 
-        return;
+        return INVALID_SOCKET;
     }
 
     freeaddrinfo(result);
@@ -97,10 +112,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
     if (iResult == SOCKET_ERROR) {
         printf("listen failed with error: %d\n", WSAGetLastError());
         closesocket(ListenSocket);
-        WSACleanup();
+        errno = WSAGetLastError();
 
-        return;
+        return INVALID_SOCKET;
     }
+	printf("Listening on port %d\n", port);
     printf("Listening on socket %d....Remember to close the socket mechanically.\n", ListenSocket);
 
     // Accept a client socket
@@ -108,9 +124,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
     if (ClientSocket == INVALID_SOCKET) {
         printf("accept failed with error: %d\n", WSAGetLastError());
         closesocket(ListenSocket);
-        WSACleanup();
+        errno = WSAGetLastError();
 
-        return;
+        return INVALID_SOCKET;
     }
 
     if( getpeername(ClientSocket, (struct sockaddr*)&cli_sockaddr_in, &cli_sockaddr_len) !=0){
@@ -120,14 +136,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
        printf("connection from %s:%d\n", ipstr, ntohs((&cli_sockaddr_in)->sin_port) );
     }
 
-    // No longer need server socket
+    // No longer need server listening socket
     closesocket(ListenSocket);
+	
+	return ClientSocket;
 
-    plhs[0] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
-    int* pmxData = (int*) mxGetData(plhs[0]);
-    *pmxData = ClientSocket;
-    printf("Accepted Connection on Socket %d", ClientSocket);
-
-
-    return;
 }

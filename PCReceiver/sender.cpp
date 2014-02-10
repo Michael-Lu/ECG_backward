@@ -78,11 +78,11 @@ int __cdecl main() {
         printf("Send period lengths done: %ld bytes\n", iResult);
 
     	// Send the lenght of jp2Image
-    	ifstream data(".\\Sunset.jpg", ios::binary);
+    	ifstream data(".\\Sunset.jp2", ios::binary);
 
     	//calculate the length of jp2Image
     	data.seekg(0, data.end);
-    	sendbuf[0] = data.tellg();
+    	sendbuf[0] = htonl( data.tellg() );
     	data.seekg(0, data.beg);
 
         iResult = send( ConnectSocket, (char*)sendbuf, sizeof(u_long), 0 );
