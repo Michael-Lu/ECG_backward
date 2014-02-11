@@ -82,7 +82,7 @@ int __cdecl main() {
 
     	//calculate the length of jp2Image
     	data.seekg(0, data.end);
-    	sendbuf[0] = htonl( data.tellg() );
+    	sendbuf[0] =  data.tellg();
     	data.seekg(0, data.beg);
 
         iResult = send( ConnectSocket, (char*)sendbuf, sizeof(u_long), 0 );
