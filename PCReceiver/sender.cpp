@@ -63,9 +63,9 @@ int __cdecl main() {
         return 1;
     }
 
-    while(1){
+    for(short count = 0; count< 10; ){
         for(short i=0; i<10 ;i++)
-            sendbuf[i] = htonl(20+i);
+            sendbuf[i] = htonl(2*count+i*10);
 
         iResult = send( ConnectSocket, (char*)sendbuf, 10*sizeof(u_long), 0 );
         if (iResult == SOCKET_ERROR) {
@@ -111,15 +111,17 @@ int __cdecl main() {
     	}
     	printf("send %d bytes done\n", send_bytes);
 
-
+/*
     char flag;
     cin.get(flag);
     cin.ignore();
     if( flag == 'n' || flag == 'N')
         break;
-
+*/
+    count++;
+    Sleep(1000);
     }
-
+    
     closesocket(ConnectSocket);
     WSACleanup();
 
