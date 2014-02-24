@@ -9,10 +9,11 @@
 *.pch
 *.pdb
 *.idb
-*.m
 *.zip
 *.rc
 *.rc2
 *.res
+*.asv
+*.jp2
 readme.txt
 
