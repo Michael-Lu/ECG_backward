@@ -5,7 +5,7 @@ if(err)
 else
    figure;
    while(1)
-       [raw_data, period, err] = Jp2Decoder('receive');
+       [raw_data, period, features, err] = Jp2Decoder('receive');
        if(err)
            err
            break;
@@ -17,6 +17,8 @@ else
        
        display('----period----');
        period
+       display('------------');
+       features
        display('------------');
        
        [height width] = size(raw_data);
